@@ -25,8 +25,7 @@
 │   │   │       ├── signature-verifier.port.ts
 │   │   │       ├── payload-digest.port.ts
 │   │   │       ├── clock.port.ts
-│   │   │       ├── id-generator.port.ts
-│   │   │       └── logger.port.ts
+│   │   │       └── id-generator.port.ts
 │   │   └── use-cases/
 │   │       ├── receive-registration.usecase.ts       # Implements inbound port
 │   │       ├── cancel-registration.usecase.ts
@@ -39,34 +38,29 @@
 │   │   │   │   └── tenant-credential-resolver.ts
 │   │   │   └── database/
 │   │   │       ├── dynamo-registration-store.adapter.ts
-│   │   │       ├── supabase-registration-store.adapter.ts
-│   │   │       └── provider-policy-registration-store.ts
+│   │   │       └── supabase-registration-store.adapter.ts
 │   │   └── handlers/api-gateway/                    # Driving adapters; accept inbound ports
 │   │       ├── provider-registrations.ts
+│   │       ├── provider-registrations-cancellations.ts
 │   │       ├── admin-get-receipt.ts
 │   │       └── admin-list-registrations.ts
 │   └── bootstrap/aws/                                # AWS composition roots only
 │       ├── provider-registrations.ts
+│       ├── provider-registration-cancellations.ts
+│       ├── provider-callback-runtime.ts
+│       ├── admin-registration-runtime.ts
 │       ├── admin-get-receipt.ts
 │       └── admin-list-registrations.ts
 ├── supabase/                                         # Deno composition root / local deployment
 │   ├── config.toml
 │   ├── migrations/0001_registration_receipts.sql
-│   └── functions/provider-registrations/index.ts
+│   └── functions/
+│       ├── provider/index.ts
+│       ├── provider-registrations/index.ts
+│       └── provider-registrations-cancellations/index.ts
 ├── tests/
 │   ├── contract/registration-adapter.contract.spec.ts
-│   ├── fixtures/
-│   │   ├── signed-provider-deliveries.ts
-│   │   └── failure-scenarios.ts
-│   ├── unit/application/
-│   │   ├── receive-registration.usecase.spec.ts
-│   │   ├── cancel-registration.usecase.spec.ts
-│   │   ├── get-registration-receipt.usecase.spec.ts
-│   │   └── list-workshop-registrations.usecase.spec.ts
-│   └── integration/infrastructure/
-│       ├── dynamo-registration-store.spec.ts
-│       ├── supabase-registration-store.spec.ts
-│       └── provider-policy-registration-store.spec.ts
+│   └── fixtures/signed-provider-deliveries.ts
 ├── docs/
 │   ├── architecture/hexagonal-boundaries.md
 │   ├── dependency-ledger.md

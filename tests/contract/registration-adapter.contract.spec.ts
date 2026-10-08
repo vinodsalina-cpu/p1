@@ -12,6 +12,8 @@ import {
 import { GetCommand, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { HmacSignatureVerifier } from '../../src/infrastructure/adapters/security/hmac-signature-verifier.js';
 import { WebCryptoPayloadDigest } from '../../src/infrastructure/adapters/security/web-crypto-payload-digest.js';
+import { adminGetReceiptHandler } from '../../src/infrastructure/handlers/api-gateway/admin-get-receipt.js';
+import { adminListRegistrationsHandler } from '../../src/infrastructure/handlers/api-gateway/admin-list-registrations.js';
 import { providerRegistrationCancellationsHandler } from '../../src/infrastructure/handlers/api-gateway/provider-registrations-cancellations.js';
 import { providerRegistrationsHandler } from '../../src/infrastructure/handlers/api-gateway/provider-registrations.js';
 import {
@@ -238,6 +240,46 @@ describe('provider registration callback contract', () => {
     });
     expect(transaction?.input.TransactItems?.[2]?.ConditionCheck?.ConditionExpression)
       .toBe('attribute_not_exists(PK)');
+  });
+
+  it('serves IAM-protected admin receipt and workshop query requests with tenant scope', async () => {
+    const now = fixedNow();
+    const receipt = {
+      receiptId: 'receipt-1',
+      tenantId: 'tenant-1',
+      providerEventId: 'event-1',
+      eventType: 'registration' as const,
+      payloadDigest: 'd'.repeat(64),
+      receivedAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+    };
+    const registration = {
+      tenantId: 'tenant-1',
+      providerEventId: 'event-1',
+      providerRegistrationId: 'registration-1',
+      workshopId: 'workshop-1',
+      externalParticipantId: 'participant-1',
+      occurredAt: now,
+      receivedAt: now,
+      schemaVersion: 1,
+    };
+    const receiptResponse = await adminGetReceiptHandler(
+      new Request('https://admin.test/admin/receipts/receipt-1?tenantId=tenant-1'),
+      { execute: async (query) => query.tenantId === 'tenant-1' ? receipt : null },
+    );
+    const registrationsResponse = await adminListRegistrationsHandler(
+      new Request('https://admin.test/admin/workshops/workshop-1/registrations?tenantId=tenant-1&limit=20'),
+      { execute: async (query) => ({
+        registrations: query.tenantId === 'tenant-1' ? [registration] : [],
+      }) },
+    );
+
+    expect(receiptResponse.status).toBe(200);
+    expect(await receiptResponse.json()).toMatchObject({ receiptId: 'receipt-1' });
+    expect(registrationsResponse.status).toBe(200);
+    expect(await registrationsResponse.json()).toMatchObject({
+      registrations: [{ providerRegistrationId: 'registration-1' }],
+    });
   });
 });
 

@@ -1,5 +1,6 @@
 export interface HttpApiGatewayEvent {
   readonly rawPath: string;
+  readonly rawQueryString?: string;
   readonly headers: Readonly<Record<string, string | undefined>>;
   readonly body?: string;
   readonly isBase64Encoded?: boolean;
@@ -30,7 +31,8 @@ export async function invokeWebHandler(
       ? Buffer.from(event.body, 'base64')
       : new TextEncoder().encode(event.body);
   const method = event.requestContext.http.method;
-  const request = new Request(`https://callback.invalid${event.rawPath}`, {
+  const query = event.rawQueryString ? `?${event.rawQueryString}` : '';
+  const request = new Request(`https://callback.invalid${event.rawPath}${query}`, {
     method,
     headers,
     ...body && method !== 'GET' && method !== 'HEAD' ? { body } : {},
@@ -50,7 +52,7 @@ export function serviceUnavailableResponse(): HttpApiGatewayResponse {
     body: JSON.stringify({
       error: {
         code: 'service_unavailable',
-        message: 'The callback could not be durably recorded.',
+        message: 'The requested operation is temporarily unavailable.',
       },
     }),
   };

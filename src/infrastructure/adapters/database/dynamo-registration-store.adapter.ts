@@ -1,9 +1,15 @@
 import {
   GetCommand,
+  QueryCommand,
   TransactWriteCommand,
   type DynamoDBDocumentClient,
   type TransactWriteCommandInput,
 } from '@aws-sdk/lib-dynamodb';
+import type { ReceiptQueryPort } from '../../../application/ports/outbound/receipt-query.port.js';
+import type {
+  WorkshopRegistrationPage,
+  WorkshopRegistrationQueryPort,
+} from '../../../application/ports/outbound/workshop-registration-query.port.js';
 import type { CancellationApplyResult, CancellationStorePort } from '../../../application/ports/outbound/cancellation-store.port.js';
 import type { RegistrationCommitResult, RegistrationStorePort } from '../../../application/ports/outbound/registration-store.port.js';
 import type { RegistrationCancellation } from '../../../domain/entities/registration-cancellation.entity.js';
@@ -12,7 +18,8 @@ import type { RegistrationReceipt } from '../../../domain/entities/registration-
 
 const MAX_CANCELLATION_RETRIES = 5;
 
-export class DynamoRegistrationStoreAdapter implements RegistrationStorePort, CancellationStorePort {
+export class DynamoRegistrationStoreAdapter
+  implements RegistrationStorePort, CancellationStorePort, ReceiptQueryPort, WorkshopRegistrationQueryPort {
   constructor(
     private readonly client: DynamoDBDocumentClient,
     private readonly tableName: string,
@@ -215,6 +222,54 @@ export class DynamoRegistrationStoreAdapter implements RegistrationStorePort, Ca
     throw new Error('Cancellation could not be committed because registration state kept changing.');
   }
 
+  async findByTenantAndId(tenantId: string, receiptId: string): Promise<RegistrationReceipt | null> {
+    const result = await this.client.send(new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'ReceiptIndex',
+      KeyConditionExpression: 'receiptId = :receiptId',
+      ExpressionAttributeValues: { ':receiptId': receiptId },
+      Limit: 2,
+      ConsistentRead: false,
+    }));
+    const matches = (result.Items ?? []).filter(
+      (item) => item['tenantId'] === tenantId && item['entityType'] === 'receipt',
+    );
+    if (matches.length > 1) {
+      throw new Error('DynamoDB returned multiple receipts for one receipt ID.');
+    }
+    return matches[0] ? restoreReceipt(matches[0]) : null;
+  }
+
+  async listByWorkshop(input: {
+    readonly tenantId: string;
+    readonly workshopId: string;
+    readonly limit: number;
+    readonly cursor?: string;
+  }): Promise<WorkshopRegistrationPage> {
+    const result = await this.client.send(new QueryCommand({
+      TableName: this.tableName,
+      IndexName: 'WorkshopIndex',
+      KeyConditionExpression: 'workshopPK = :workshopPK',
+      ExpressionAttributeValues: { ':workshopPK': workshopKey(input.tenantId, input.workshopId) },
+      Limit: input.limit + 1,
+      ScanIndexForward: true,
+      ...(input.cursor ? { ExclusiveStartKey: decodeCursor(input.cursor) } : {}),
+    }));
+    const items = (result.Items ?? []).filter((item) =>
+      item['entityType'] === 'registration'
+      && item['tenantId'] === input.tenantId
+      && item['workshopId'] === input.workshopId
+    );
+    const hasMore = items.length > input.limit;
+    const pageItems = hasMore ? items.slice(0, input.limit) : items;
+    return {
+      registrations: pageItems.map(restoreRegistration),
+      ...(hasMore && result.LastEvaluatedKey
+        ? { nextCursor: encodeCursor(result.LastEvaluatedKey) }
+        : {}),
+    };
+  }
+
   private async getEventReceipt(tenantId: string, providerEventId: string): Promise<Record<string, unknown> | undefined> {
     return this.getByKey({
       PK: tenantKey(tenantId),
@@ -299,6 +354,66 @@ function restoreReceipt(item: Record<string, unknown>): RegistrationReceipt {
     receivedAt: new Date(receivedAtValue),
     expiresAt: new Date(expiresAtValue * 1000),
   };
+}
+
+function restoreRegistration(item: Record<string, unknown>): Registration {
+  const tenantId = item['tenantId'];
+  const providerEventId = item['providerEventId'];
+  const providerRegistrationId = item['providerRegistrationId'];
+  const workshopId = item['workshopId'];
+  const externalParticipantId = item['externalParticipantId'];
+  const occurredAt = item['occurredAt'];
+  const receivedAt = item['receivedAt'];
+  const schemaVersion = item['schemaVersion'];
+  if (
+    typeof tenantId !== 'string'
+    || typeof providerEventId !== 'string'
+    || typeof providerRegistrationId !== 'string'
+    || typeof workshopId !== 'string'
+    || typeof externalParticipantId !== 'string'
+    || typeof occurredAt !== 'string'
+    || typeof receivedAt !== 'string'
+    || typeof schemaVersion !== 'number'
+  ) {
+    throw new Error('DynamoDB returned an invalid registration.');
+  }
+  const occurredAtDate = new Date(occurredAt);
+  const receivedAtDate = new Date(receivedAt);
+  if (!Number.isFinite(occurredAtDate.getTime()) || !Number.isFinite(receivedAtDate.getTime())) {
+    throw new Error('DynamoDB returned invalid registration timestamps.');
+  }
+  return {
+    tenantId,
+    providerEventId,
+    providerRegistrationId,
+    workshopId,
+    externalParticipantId,
+    occurredAt: occurredAtDate,
+    receivedAt: receivedAtDate,
+    schemaVersion,
+  };
+}
+
+function encodeCursor(cursor: Record<string, unknown>): string {
+  return Buffer.from(JSON.stringify(cursor)).toString('base64url');
+}
+
+function decodeCursor(cursor: string): Record<string, unknown> {
+  try {
+    const value: unknown = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
+    if (
+      !isRecord(value)
+      || typeof value['PK'] !== 'string'
+      || typeof value['SK'] !== 'string'
+      || typeof value['workshopPK'] !== 'string'
+      || typeof value['workshopSK'] !== 'string'
+    ) {
+      throw new Error('Invalid workshop cursor.');
+    }
+    return value;
+  } catch (error) {
+    throw new TypeError('cursor must be a valid workshop pagination token.', { cause: error });
+  }
 }
 
 function tenantKey(tenantId: string): string {
