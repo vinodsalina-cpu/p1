@@ -1,47 +1,82 @@
-.
+.                                                   # P1 / Workshop Registration Intake
 ├── src/
-│   ├── domain/                      # PURE DOMAIN LAYER
+│   ├── domain/                                      # Pure registration and receipt model
 │   │   ├── entities/
-│   │   │   └── user.entity.ts
+│   │   │   ├── registration.entity.ts
+│   │   │   ├── registration-receipt.entity.ts
+│   │   │   └── registration-cancellation.entity.ts
 │   │   └── exceptions/
-│   │       └── user-already-exists.exception.ts
-│   │
-│   ├── application/                 # APPLICATION LAYER
-│   │   ├── use-cases/
-│   │   │   └── register-user.usecase.ts
-│   │   └── ports/
-│   │       └── outbound/            # Driven Ports
-│   │           └── user-repository.port.ts
-│   │
-│   ├── infrastructure/              # INFRASTRUCTURE LAYER
+│   │       ├── invalid-signature.exception.ts
+│   │       ├── registration-conflict.exception.ts
+│   │       └── tenant-mismatch.exception.ts
+│   ├── application/
+│   │   ├── ports/
+│   │   │   ├── inbound/                             # Driving-side use-case contracts
+│   │   │   │   ├── receive-registration.port.ts
+│   │   │   │   ├── cancel-registration.port.ts
+│   │   │   │   ├── get-registration-receipt.port.ts
+│   │   │   │   └── list-workshop-registrations.port.ts
+│   │   │   └── outbound/                            # Driven-side contracts owned by application
+│   │   │       ├── registration-store.port.ts
+│   │   │       ├── cancellation-store.port.ts
+│   │   │       ├── receipt-query.port.ts
+│   │   │       ├── workshop-registration-query.port.ts
+│   │   │       ├── webhook-credential.port.ts
+│   │   │       ├── signature-verifier.port.ts
+│   │   │       ├── payload-digest.port.ts
+│   │   │       ├── clock.port.ts
+│   │   │       ├── id-generator.port.ts
+│   │   │       └── logger.port.ts
+│   │   └── use-cases/
+│   │       ├── receive-registration.usecase.ts       # Implements inbound port
+│   │       ├── cancel-registration.usecase.ts
+│   │       ├── get-registration-receipt.usecase.ts
+│   │       └── list-workshop-registrations.usecase.ts
+│   ├── infrastructure/                              # Outermost implementation adapters
 │   │   ├── adapters/
+│   │   │   ├── security/
+│   │   │   │   ├── hmac-signature-verifier.ts
+│   │   │   │   └── tenant-credential-resolver.ts
 │   │   │   └── database/
-│   │   │       ├── interfaces/      # Provider-specific types if needed
-│   │       │   │
-│   │       │   │   # 1. Concrete Providers (The Adapters)
-│   │   │       ├── dynamo-user-repository.adapter.ts
-│   │   │       ├── supabase-user-repository.adapter.ts
-│   │   │       │
-│   │   │       │   # 2. The Policy (Dynamic router / Fallback orchestrator)
-│   │   │       └── provider-policy-user-repository.ts
-│   │   │
-│   │   └── handlers/                # DRIVING ADAPTERS (Lambda entry points)
-│   │       └── api-gateway/
-│   │           └── register-user.ts # Injects the Policy into the Use Case
-│   │
-│   └── shared/
-│       └── logger.ts
-│
-├── tests/                           # TESTING SUITE
-│   ├── unit/                        # Tests logic using fast in-memory mocks
-│   │   └── application/
-│   │       └── register-user.usecase.spec.ts
-│   └── integration/                 # Tests individual concrete adapters and policies
-│       └── infrastructure/
-│           ├── dynamo-user-repository.spec.ts
-│           ├── supabase-user-repository.spec.ts
-│           └── provider-policy-user-repository.spec.ts
-│
+│   │   │       ├── dynamo-registration-store.adapter.ts
+│   │   │       ├── supabase-registration-store.adapter.ts
+│   │   │       └── provider-policy-registration-store.ts
+│   │   └── handlers/api-gateway/                    # Driving adapters; accept inbound ports
+│   │       ├── provider-registrations.ts
+│   │       ├── admin-get-receipt.ts
+│   │       └── admin-list-registrations.ts
+│   └── bootstrap/aws/                                # AWS composition roots only
+│       ├── provider-registrations.ts
+│       ├── admin-get-receipt.ts
+│       └── admin-list-registrations.ts
+├── supabase/                                         # Deno composition root / local deployment
+│   ├── config.toml
+│   ├── migrations/0001_registration_receipts.sql
+│   └── functions/provider-registrations/index.ts
+├── tests/
+│   ├── contract/registration-adapter.contract.spec.ts
+│   ├── fixtures/
+│   │   ├── signed-provider-deliveries.ts
+│   │   └── failure-scenarios.ts
+│   ├── unit/application/
+│   │   ├── receive-registration.usecase.spec.ts
+│   │   ├── cancel-registration.usecase.spec.ts
+│   │   ├── get-registration-receipt.usecase.spec.ts
+│   │   └── list-workshop-registrations.usecase.spec.ts
+│   └── integration/infrastructure/
+│       ├── dynamo-registration-store.spec.ts
+│       ├── supabase-registration-store.spec.ts
+│       └── provider-policy-registration-store.spec.ts
+├── docs/
+│   ├── architecture/hexagonal-boundaries.md
+│   ├── dependency-ledger.md
+│   ├── runbook.md
+│   └── evidence/README.md
+├── .dependency-cruiser.cjs                           # Dependency direction and cycle rules
+├── template.yaml                                     # AWS SAM / CloudFormation only
 ├── package.json
-├── tsconfig.json
-└── serverless.yml
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── tsconfig.json                                     # Node source; excludes Deno runtime
+├── .gitignore
+└── README.md

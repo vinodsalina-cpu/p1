@@ -1,0 +1,8 @@
+{
+  "nodeModulesDir": "auto",
+  "unstable": ["sloppy-imports"],
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

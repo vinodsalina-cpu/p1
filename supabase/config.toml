@@ -1,0 +1,10 @@
+project_id = "p1"
+
+[functions.provider-registrations]
+verify_jwt = false
+
+[functions.provider-registrations-cancellations]
+verify_jwt = false
+
+[functions.provider]
+verify_jwt = false

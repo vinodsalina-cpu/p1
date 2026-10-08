@@ -5,18 +5,27 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run tests/contract",
+    "check:architecture": "depcruise --config .dependency-cruiser.cjs src supabase/functions"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.34.6",
   "devDependencies": {
+    "@swc/core": "^1.16.13",
+    "@types/node": "^24.19.1",
+    "dependency-cruiser": "^18.5.0",
     "drizzle-kit": "1.0.0-rc.4",
     "jest": "^30.5.2",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1147.0",
+    "@aws-sdk/client-secrets-manager": "^3.1147.0",
+    "@aws-sdk/lib-dynamodb": "^3.1147.0",
+    "esbuild": "^0.28.2",
     "drizzle-orm": "1.0.0-rc.4"
   }
 }

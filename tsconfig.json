@@ -1,45 +1,49 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    // File Layout
+    // The AWS branch targets the README's Node.js 24 Lambda runtime.
+    "target": "ES2024",
+    // package.json declares "type": "module"; NodeNext follows Node's ESM rules.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2024"],
+
+    // TypeScript's local build emits only deployable Node application source.
     "rootDir": "./src",
     "outDir": "./dist",
-
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "target": "esnext",
-    "types": [],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
-
-    // Other Outputs
+    "noEmitOnError": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
 
-    // Stricter Typechecking Options
+    // Include Node 24 globals for Lambda source; naming only node keeps Jest
+    // and Deno globals out of the production compilation.
+    "types": ["node"],
+
+    // Catch contract-boundary and adapter mistakes early.
+    "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "forceConsistentCasingInFileNames": true,
 
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "strict": true,
-    "jsx": "react-jsx",
+    // Match the ESM output shape used by the SAM esbuild build.
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
+
+    // JSX was enabled in the starter, but this is a server-side project with no
+    // TSX files; it is intentionally disabled here.
+    // "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts"]
+  // Test sources and Supabase/Deno are outside this Node application build;
+  // they need their own type environments and are not emitted for Lambda.
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "tests/**/*.ts", "supabase/**/*.ts"]
 }

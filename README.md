@@ -33,6 +33,91 @@ A runnable vertical slice where 100 concurrent identical requests produce exactl
 | Query	| Authorized operator can read a receipt and list registrations by workshop with cursor pagination. Store receivedAt separately from occurredAt. No function-local collection is authoritative. |
 | Run twice	| Two adapters to the same observable contract: local Supabase/Deno and AWS Node Lambda. Keep normalization/policy logic portable. Local uses PostgreSQL constraints + transactions; AWS uses DynamoDB conditional/transactional writes. Distinct mechanisms. |
 
+### Provider Callback Contract
+
+Both provider endpoints accept `POST` requests with a maximum body size of 16 KiB:
+
+| Callback | Path |
+| --- | --- |
+| Registration | `/provider/registrations` |
+| Cancellation | `/provider/registrations/cancelled` |
+
+On AWS these are API Gateway routes. With Supabase Edge Functions, deploy the
+`provider` function and append the same routes to the platform prefix, for
+example `/functions/v1/provider/registrations` and
+`/functions/v1/provider/registrations/cancelled`.
+
+The request body must be UTF-8 JSON. Required headers are:
+
+| Header | Meaning |
+| --- | --- |
+| `x-provider-credential-id` | ID of a configured provider credential |
+| `x-provider-timestamp` | Unix timestamp in whole seconds |
+| `x-provider-signature` | `v1=<64 hexadecimal characters>` HMAC-SHA256 |
+
+The signature is computed over the exact bytes sent, without parsing or
+re-serializing the body:
+
+```text
+HMAC-SHA256(secret, UTF8(x-provider-timestamp + ".") || rawBody)
+```
+
+The timestamp may differ from the server clock by at most 300 seconds in either
+direction. Signature validation runs before JSON parsing. Credentials resolve
+to a configured tenant and secret; the `tenantId` in the signed body must match
+that tenant. In AWS, `WebhookSecretArn` points to a Secrets Manager JSON object
+whose keys are credential IDs and whose values have `tenantId` and `secret`
+string fields. Warm Lambda instances refresh this configuration once per
+minute; rotate credentials by accepting both the old and new IDs/secrets during
+that overlap, then remove the old credential after the refresh window and
+provider cutover. Supabase functions read the same JSON shape from
+`WEBHOOK_CREDENTIALS` and use `SUPABASE_URL` plus
+`SUPABASE_SERVICE_ROLE_KEY` for atomic RPC persistence.
+
+Registration bodies use `schemaVersion: 1` and contain non-empty string values
+for `tenantId`, `providerEventId`, `providerRegistrationId`, `workshopId`, and
+`externalParticipantId`, plus an ISO-8601 UTC `occurredAt` timestamp. A
+cancellation body contains `schemaVersion: 1`, `tenantId`, `providerEventId`,
+`providerRegistrationId`, a positive integer `sequence`, and ISO-8601 UTC
+`occurredAt`. `providerEventId` is unique across callback event types within a
+tenant; `providerRegistrationId` links a cancellation to its registration.
+
+Idempotency is scoped to `(tenantId, providerEventId)`. The receipt stores a
+SHA-256 digest of the untouched request body and expires after seven days. A
+repeated event with the same digest returns the original receipt; reusing its
+key with different body bytes returns `409`. A first durably recorded event
+returns `201`, and an identical retry returns `200`, including a retry after a
+successful commit whose first response was lost.
+
+Cancellation events are retained independently of the registration. The
+highest sequence wins; an event with a lower or equal sequence is durably
+recorded as stale and cannot revert newer state. A cancellation received before
+its registration is retained as pending and is applied when that registration
+arrives.
+
+Successful responses have the same envelope on both runtimes:
+
+```json
+{
+  "receipt": {
+    "receiptId": "uuid",
+    "tenantId": "tenant-1",
+    "providerEventId": "evt-123",
+    "eventType": "registration",
+    "payloadDigest": "sha256-hex",
+    "receivedAt": "2026-10-08T12:00:00.000Z",
+    "expiresAt": "2026-10-15T12:00:00.000Z"
+  }
+}
+```
+
+The `eventType` is `registration` or `cancellation`. Error responses use
+`{"error":{"code":"...","message":"..."}}`. Status mapping is `400` for
+malformed JSON or fields, `401` for missing/invalid/expired signatures or
+unknown credentials, `403` for tenant mismatch, `405` for non-POST methods,
+`409` for a changed payload using an existing event key, `413` for bodies over
+16 KiB, and `503` when durable persistence is unavailable.
+
 
 ### State and Effect Boundary
 Received = log observation. Accepted = durable registration + receipt committed.

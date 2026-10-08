@@ -1,0 +1,310 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  AWS Node.js Lambda and DynamoDB deployment for the workshop registration
+  webhook intake. The local Supabase/Deno implementation is developed and run
+  through the Supabase CLI and is intentionally not deployed by this template.
+Metadata:
+  com.aws.cloudformation.Context:
+    arch: "Serverless HTTP API that accepts signed provider callbacks and IAM-authorized admin requests, backed by a DynamoDB registration store and a Secrets Manager webhook secret."
+
+Parameters:
+  WebhookSecretArn:
+    Type: String
+    Description: ARN of the externally managed Secrets Manager webhook secret.
+    # NoEcho is intentionally omitted: an ARN identifies a secret but is not
+    # the secret value. The secret value is fetched by the Lambda at runtime.
+    # NoEcho: true
+  FunctionConcurrency:
+    Type: Number
+    Default: 5
+    MinValue: 1
+    MaxValue: 10
+    Description: Small per-function concurrency cap; monitor throttling as required by the README.
+
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    Timeout: 8
+    MemorySize: 256
+    ReservedConcurrentExecutions: !Ref FunctionConcurrency
+    LoggingConfig:
+      LogFormat: JSON
+    Environment:
+      Variables:
+        REGISTRATIONS_TABLE: !Ref RegistrationsTable
+    # Architecture is intentionally left at Lambda's default. The README has
+    # no ARM/x86 requirement, so this template does not guess one.
+    # Architectures:
+    #   - arm64
+  HttpApi:
+    Auth:
+      # Enables route-level AWS_IAM on the operator endpoints below.
+      EnableIamAuthorizer: true
+      # No default authorizer: provider webhook requests use the signed HMAC
+      # contract in the handler; operator routes opt into AWS_IAM individually.
+
+Resources:
+  RegistrationApi:
+    Type: AWS::Serverless::HttpApi
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: "Shared HTTP API for provider webhook callbacks and admin operations on registration state."
+        trust:
+          src: infer
+          conf: low
+          note: "rationale not documented"
+    Properties:
+      StageName: '$default'
+      # This is server-to-server traffic; browser CORS is not part of the README contract.
+      # CorsConfiguration:
+      #   AllowOrigins: ['https://example.invalid']
+
+  RegistrationsTable:
+    Type: AWS::DynamoDB::Table
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: "Primary registration store for provider webhook receipts, workshop listing, and canonical lookup indexes."
+        trust:
+          src: infer
+          conf: low
+          note: "rationale not documented"
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: workshopPK
+          AttributeType: S
+        - AttributeName: workshopSK
+          AttributeType: S
+        - AttributeName: receiptId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        # Supports the README's workshop registration list with cursor pagination.
+        - IndexName: WorkshopIndex
+          KeySchema:
+            - AttributeName: workshopPK
+              KeyType: HASH
+            - AttributeName: workshopSK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        # Allows an operator to resolve a canonical receipt ID directly.
+        - IndexName: ReceiptIndex
+          KeySchema:
+            - AttributeName: receiptId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
+  ProviderRegistrationsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/bootstrap/aws/provider-registrations.ts
+        Target: es2024
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Minify: false
+        # Sourcemaps are disabled for the deployment bundle to avoid shipping
+        # source text and extra artifacts; use local TypeScript maps for dev.
+        Sourcemap: false
+      com.aws.cloudformation.Context:
+        why: "Handles inbound provider registration webhook callbacks, validates HMAC signatures, and records canonical registration state in DynamoDB."
+        trust:
+          src: infer
+          conf: low
+          note: "rationale not documented"
+    Properties:
+      CodeUri: .
+      Handler: provider-registrations.handler
+      Environment:
+        Variables:
+          WEBHOOK_SECRET_ARN: !Ref WebhookSecretArn
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: RegistrationTransactionAccess
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:Query
+                - dynamodb:TransactWriteItems
+                - dynamodb:ConditionCheckItem
+              Resource:
+                - !GetAtt RegistrationsTable.Arn
+                - !Sub '${RegistrationsTable.Arn}/index/*'
+            - Sid: ReadWebhookSecret
+              Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref WebhookSecretArn
+      Events:
+        ProviderRegistration:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RegistrationApi
+            Path: /provider/registrations
+            Method: POST
+            PayloadFormatVersion: '2.0'
+            # HMAC timestamp + raw-body validation is application behavior.
+
+  ProviderRegistrationCancellationFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/bootstrap/aws/provider-registration-cancellations.ts
+        Target: es2024
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Minify: false
+        Sourcemap: false
+    Properties:
+      CodeUri: .
+      Handler: provider-registration-cancellations.handler
+      Environment:
+        Variables:
+          WEBHOOK_SECRET_ARN: !Ref WebhookSecretArn
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: CancellationTransactionAccess
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:TransactWriteItems
+                - dynamodb:ConditionCheckItem
+              Resource: !GetAtt RegistrationsTable.Arn
+            - Sid: ReadWebhookSecret
+              Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref WebhookSecretArn
+      Events:
+        ProviderCancellation:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RegistrationApi
+            Path: /provider/registrations/cancelled
+            Method: POST
+            PayloadFormatVersion: '2.0'
+
+  AdminGetReceiptFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/bootstrap/aws/admin-get-receipt.ts
+        Target: es2024
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Minify: false
+        Sourcemap: false
+      com.aws.cloudformation.Context:
+        why: "Allows operators to retrieve a canonical receipt record by receipt ID using the registration table indexes."
+        trust:
+          src: infer
+          conf: low
+          note: "rationale not documented"
+    Properties:
+      CodeUri: .
+      Handler: admin-get-receipt.handler
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: ReadCanonicalReceipt
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt RegistrationsTable.Arn
+                - !Sub '${RegistrationsTable.Arn}/index/*'
+      Events:
+        GetReceipt:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RegistrationApi
+            Path: /admin/receipts/{receiptId}
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: AWS_IAM
+
+  AdminListRegistrationsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/bootstrap/aws/admin-list-registrations.ts
+        Target: es2024
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Minify: false
+        Sourcemap: false
+      com.aws.cloudformation.Context:
+        why: "Lists registrations for a workshop with cursor-style access patterns using the workshop index and IAM-protected admin API routes."
+        trust:
+          src: infer
+          conf: low
+          note: "rationale not documented"
+    Properties:
+      CodeUri: .
+      Handler: admin-list-registrations.handler
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: ListWorkshopRegistrations
+              Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource:
+                - !GetAtt RegistrationsTable.Arn
+                - !Sub '${RegistrationsTable.Arn}/index/*'
+      Events:
+        ListWorkshopRegistrations:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RegistrationApi
+            Path: /admin/workshops/{workshopId}/registrations
+            Method: GET
+            PayloadFormatVersion: '2.0'
+            Auth:
+              Authorizer: AWS_IAM
+
+Outputs:
+  RegistrationApiUrl:
+    Description: API Gateway HTTP API endpoint for the AWS adapter.
+    Value: !Sub 'https://${RegistrationApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/'
+  RegistrationsTableName:
+    Description: DynamoDB table used by the AWS registration adapter.
+    Value: !Ref RegistrationsTable
