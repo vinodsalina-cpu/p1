@@ -1,0 +1,17 @@
+{
+  "name": "p1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.34.6",
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "typescript": "^7.0.2"
+  }
+}

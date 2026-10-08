@@ -1,0 +1,47 @@
+.
+├── src/
+│   ├── domain/                      # PURE DOMAIN LAYER
+│   │   ├── entities/
+│   │   │   └── user.entity.ts
+│   │   └── exceptions/
+│   │       └── user-already-exists.exception.ts
+│   │
+│   ├── application/                 # APPLICATION LAYER
+│   │   ├── use-cases/
+│   │   │   └── register-user.usecase.ts
+│   │   └── ports/
+│   │       └── outbound/            # Driven Ports
+│   │           └── user-repository.port.ts
+│   │
+│   ├── infrastructure/              # INFRASTRUCTURE LAYER
+│   │   ├── adapters/
+│   │   │   └── database/
+│   │   │       ├── interfaces/      # Provider-specific types if needed
+│   │       │   │
+│   │       │   │   # 1. Concrete Providers (The Adapters)
+│   │   │       ├── dynamo-user-repository.adapter.ts
+│   │   │       ├── supabase-user-repository.adapter.ts
+│   │   │       │
+│   │   │       │   # 2. The Policy (Dynamic router / Fallback orchestrator)
+│   │   │       └── provider-policy-user-repository.ts
+│   │   │
+│   │   └── handlers/                # DRIVING ADAPTERS (Lambda entry points)
+│   │       └── api-gateway/
+│   │           └── register-user.ts # Injects the Policy into the Use Case
+│   │
+│   └── shared/
+│       └── logger.ts
+│
+├── tests/                           # TESTING SUITE
+│   ├── unit/                        # Tests logic using fast in-memory mocks
+│   │   └── application/
+│   │       └── register-user.usecase.spec.ts
+│   └── integration/                 # Tests individual concrete adapters and policies
+│       └── infrastructure/
+│           ├── dynamo-user-repository.spec.ts
+│           ├── supabase-user-repository.spec.ts
+│           └── provider-policy-user-repository.spec.ts
+│
+├── package.json
+├── tsconfig.json
+└── serverless.yml
