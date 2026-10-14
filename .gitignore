@@ -1,3 +1,8 @@
 node_modules
 dist
+.pnpm-store/
 docs
+supabase/.temp/
+supabase/.branches/
+supabase/functions/.env
+/.cleanup-readiness

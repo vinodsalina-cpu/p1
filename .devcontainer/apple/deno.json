@@ -1,0 +1,15 @@
+{
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true,
+    "types": ["./runtime.d.ts"]
+  },
+  "lint": {
+    "include": ["index.ts"]
+  },
+  "fmt": {
+    "include": ["index.ts"],
+    "singleQuote": true
+  }
+}

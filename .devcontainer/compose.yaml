@@ -1,0 +1,78 @@
+name: p1-real-tests
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    init: true
+    volumes:
+      - ..:/workspaces/p1
+      - node-modules:/workspaces/p1/node_modules
+      - pnpm-store:/home/node/.local/share/pnpm/store
+    environment:
+      DYNAMODB_ENDPOINT: http://dynamo:8000
+      SUPABASE_API_URL: http://edge:9000
+      P1_TEST_DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+      P1_LOCAL_TEST_HOSTS: db,dynamo,edge
+    depends_on:
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+      edge:
+        condition: service_started
+      dynamo:
+        condition: service_started
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-roles.sql:/docker-entrypoint-initdb.d/00-roles.sql:ro
+      - ../supabase/migrations/0001_registration_receipts.sql:/docker-entrypoint-initdb.d/01-registration.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  rest:
+    image: postgrest/postgrest:v12.2.12
+    environment:
+      PGRST_DB_URI: postgres://postgres:postgres@db:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: service_role
+    depends_on:
+      db:
+        condition: service_healthy
+  edge:
+    image: public.ecr.aws/supabase/edge-runtime:v1.77.4
+    command: [start, --main-service, /workspaces/p1/.devcontainer/apple]
+    volumes:
+      - ..:/workspaces/p1:ro
+    environment:
+      P1_REST_HOST: rest:3000
+      SUPABASE_URL: http://127.0.0.1:9000
+      SUPABASE_SERVICE_ROLE_KEY: local-test-only
+      WEBHOOK_CREDENTIALS: '{"provider-1":{"tenantId":"tenant-1","secret":"provider-callback-contract-test-secret-32bytes"}}'
+    depends_on: [rest]
+  dynamo-init:
+    image: amazon/dynamodb-local:3.3.0
+    user: '0:0'
+    entrypoint: [chown, -R, '1000:1000', /data]
+    volumes:
+      - dynamo-data:/data
+  dynamo:
+    image: amazon/dynamodb-local:3.3.0
+    command: [-jar, DynamoDBLocal.jar, -sharedDb, -dbPath, ./data]
+    volumes:
+      - dynamo-data:/home/dynamodblocal/data
+    depends_on:
+      dynamo-init:
+        condition: service_completed_successfully
+volumes:
+  node-modules:
+  pnpm-store:
+  postgres-data:
+  dynamo-data:

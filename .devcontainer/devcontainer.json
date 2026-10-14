@@ -1,0 +1,14 @@
+{
+  "name": "p1 (Node 24)",
+  "remoteUser": "node",
+  "workspaceFolder": "/workspaces/p1",
+  "postCreateCommand": "pnpm install --frozen-lockfile",
+  "customizations": {
+    "jetbrains": {
+      "backend": "WebStorm"
+    }
+  },
+  "dockerComposeFile": "compose.yaml",
+  "service": "dev",
+  "shutdownAction": "stopCompose"
+}

@@ -1,0 +1,39 @@
+name: Apple Container real integration tests
+on:
+  workflow_dispatch:
+    inputs:
+      patch:
+        description: Apply this Mac's subnet and port-5300 DNS restrictions
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'supabase/**'
+      - '.devcontainer/**'
+      - '.github/workflows/apple-container.yml'
+      - '*lock*'
+      - 'package.json'
+jobs:
+  real-adapters:
+    runs-on: [self-hosted, macOS, ARM64, apple-container]
+    timeout-minutes: 30
+    concurrency:
+      group: p1-apple-container-runner
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build environment and run real adapter tests
+        env:
+          APPLY_LOCAL_PATCH: ${{ inputs.patch || false }}
+        run: |
+          args=(--runtime apple)
+          if [ "$APPLY_LOCAL_PATCH" = true ]; then args+=(--patch); fi
+          npm run build:environment -- "${args[@]}"
+      - name: Stop pipeline services and preserve data
+        if: always()
+        run: |
+          for name in p1-apple-edge p1-apple-rest p1-apple-dynamo p1-apple-db; do
+            container stop "$name" || true
+          done

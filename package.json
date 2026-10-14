@@ -6,26 +6,32 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run tests/contract",
-    "check:architecture": "depcruise --config .dependency-cruiser.cjs src supabase/functions"
+    "test:integration": "vitest run tests/integration",
+    "test:integration:aws": "vitest run tests/integration/dynamodb-local.spec.ts",
+    "test:integration:supabase": "vitest run tests/integration/supabase-local.spec.ts",
+    "check:architecture": "depcruise --config .dependency-cruiser.cjs src supabase/functions",
+    "build:environment": "node .devcontainer/setup.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.34.6",
   "devDependencies": {
-    "@swc/core": "^1.16.13",
-    "@types/node": "^24.19.1",
-    "dependency-cruiser": "^18.5.0",
+    "@swc/core": "^1.16.18",
+    "@types/node": "^24.19.2",
+    "@types/pg": "8.23.1",
+    "dependency-cruiser": "^18.6.0",
     "drizzle-kit": "1.0.0-rc.4",
     "jest": "^30.5.2",
+    "pg": "8.23.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.4"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1147.0",
-    "@aws-sdk/client-secrets-manager": "^3.1147.0",
-    "@aws-sdk/lib-dynamodb": "^3.1147.0",
-    "esbuild": "^0.28.2",
-    "drizzle-orm": "1.0.0-rc.4"
+    "@aws-sdk/client-dynamodb": "^3.1151.0",
+    "@aws-sdk/client-secrets-manager": "^3.1151.0",
+    "@aws-sdk/lib-dynamodb": "^3.1151.0",
+    "drizzle-orm": "1.0.0-rc.4",
+    "esbuild": "^0.28.2"
   }
 }

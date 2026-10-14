@@ -1,0 +1,24 @@
+name: p1-aws-local
+
+services:
+  dynamodb-data-init:
+    image: amazon/dynamodb-local:3.3.0@sha256:d89f8fcc6b1a39cb35976c248ed42a28c66ae00dc043099210f5571e42648ab4
+    user: "0:0"
+    entrypoint: ["chown", "-R", "1000:1000", "/data"]
+    volumes:
+      - dynamodb-data:/data
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:3.3.0@sha256:d89f8fcc6b1a39cb35976c248ed42a28c66ae00dc043099210f5571e42648ab4
+    working_dir: /home/dynamodblocal
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "./data"]
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+    depends_on:
+      dynamodb-data-init:
+        condition: service_completed_successfully
+
+volumes:
+  dynamodb-data:
