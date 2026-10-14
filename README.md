@@ -26,20 +26,20 @@ A runnable vertical slice where 100 concurrent identical requests produce exactl
 
 
 ###  Required Behavior
-| ID	| Requirement |
-| --- | --- |
-| Receive | POST /provider/registrations accepts tenant, providerEventId, workshopId, externalParticipantId, occurredAt, schemaVersion. Verify an HMAC over timestamp + raw bytes before parsing. Never trust a provider-supplied tenant without matching the configured credential. |
-| Commit	| Persist registration plus its idempotency receipt atomically. Key scope = tenant + providerEventId; store a payload digest. Repeat delivery → same receipt. Different payload for that key → 409. Preserve duplicates for 7 days; reject signed replays older than the 5-minute signature window. |
-| Query	| Authorized operator can read a receipt and list registrations by workshop with cursor pagination. Store receivedAt separately from occurredAt. No function-local collection is authoritative. |
-| Run twice	| Two adapters to the same observable contract: local Supabase/Deno and AWS Node Lambda. Keep normalization/policy logic portable. Local uses PostgreSQL constraints + transactions; AWS uses DynamoDB conditional/transactional writes. Distinct mechanisms. |
+| ID	        | Requirement                                                                                                                                                                                                                                                                                       |
+|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Receive   | POST /provider/registrations accepts tenant, providerEventId, workshopId, externalParticipantId, occurredAt, schemaVersion. Verify an HMAC over timestamp + raw bytes before parsing. Never trust a provider-supplied tenant without matching the configured credential.                          |
+| Commit	    | Persist registration plus its idempotency receipt atomically. Key scope = tenant + providerEventId; store a payload digest. Repeat delivery → same receipt. Different payload for that key → 409. Preserve duplicates for 7 days; reject signed replays older than the 5-minute signature window. |
+| Query	     | Authorized operator can read a receipt and list registrations by workshop with cursor pagination. Store receivedAt separately from occurredAt. No function-local collection is authoritative.                                                                                                     |
+| Run twice	 | Two adapters to the same observable contract: local Supabase/Deno and AWS Node Lambda. Keep normalization/policy logic portable. Local uses PostgreSQL constraints + transactions; AWS uses DynamoDB conditional/transactional writes. Distinct mechanisms.                                       |
 
 ### Provider Callback Contract
 
 Both provider endpoints accept `POST` requests with a maximum body size of 16 KiB:
 
-| Callback | Path |
-| --- | --- |
-| Registration | `/provider/registrations` |
+| Callback     | Path                                |
+|--------------|-------------------------------------|
+| Registration | `/provider/registrations`           |
 | Cancellation | `/provider/registrations/cancelled` |
 
 On AWS these are API Gateway routes. With Supabase Edge Functions, deploy the
@@ -49,11 +49,11 @@ example `/functions/v1/provider/registrations` and
 
 The request body must be UTF-8 JSON. Required headers are:
 
-| Header | Meaning |
-| --- | --- |
-| `x-provider-credential-id` | ID of a configured provider credential |
-| `x-provider-timestamp` | Unix timestamp in whole seconds |
-| `x-provider-signature` | `v1=<64 hexadecimal characters>` HMAC-SHA256 |
+| Header                     | Meaning                                      |
+|----------------------------|----------------------------------------------|
+| `x-provider-credential-id` | ID of a configured provider credential       |
+| `x-provider-timestamp`     | Unix timestamp in whole seconds              |
+| `x-provider-signature`     | `v1=<64 hexadecimal characters>` HMAC-SHA256 |
 
 The signature is computed over the exact bytes sent, without parsing or
 re-serializing the body:
@@ -139,15 +139,15 @@ Status codes: 201 first commit · 200 repeat · stable 4xx for rejected input.
 
 ### Acceptance Criteria
 
-| ID | Criteria |
-| --- | --- |
-| 1 | 100 concurrent identical requests yield exactly one registration and one canonical receipt in each adapter. Every success response references that receipt. |
-| 2 | Conflicting payload → 409; invalid/expired signatures and credential/tenant mismatch leave zero rows/items. |
-| 3 | Inject failure after commit but before HTTP response. Retry returns the committed receipt without another registration. |
-| 4 | Local: 30 RPS, p95 < 250 ms, peak app RSS < 256 MiB. 500/503 errors < 1% in the healthy run; no correctness exceptions. |
-| 5 | AWS: 5 RPS for 60 seconds, warm client p95 < 1 s. Report cold samples separately — do not hide them in a warm average. |
-| 6 | Same contract suite against Deno/PostgreSQL and Node/DynamoDB. Persisted receipts survive restart or execution-environment replacement. |
-| 7 | Cancellation tests include duplicate cancellation, cancellation-before-create, and changed payload. State never regresses due to an older event. |
+| ID | Criteria                                                                                                                                                    |
+|----|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1  | 100 concurrent identical requests yield exactly one registration and one canonical receipt in each adapter. Every success response references that receipt. |
+| 2  | Conflicting payload → 409; invalid/expired signatures and credential/tenant mismatch leave zero rows/items.                                                 |
+| 3  | Inject failure after commit but before HTTP response. Retry returns the committed receipt without another registration.                                     |
+| 4  | Local: 30 RPS, p95 < 250 ms, peak app RSS < 256 MiB. 500/503 errors < 1% in the healthy run; no correctness exceptions.                                     |
+| 5  | AWS: 5 RPS for 60 seconds, warm client p95 < 1 s. Report cold samples separately — do not hide them in a warm average.                                      |
+| 6  | Same contract suite against Deno/PostgreSQL and Node/DynamoDB. Persisted receipts survive restart or execution-environment replacement.                     |
+| 7  | Cancellation tests include duplicate cancellation, cancellation-before-create, and changed payload. State never regresses due to an older event.            |
 
 
 ### Late Client Change (Day 3)
@@ -173,3 +173,48 @@ The provider adds registration.cancelled callbacks:
 - AWS latency/log evidence
 - Dependency ledger
 - Runbook: rotating the webhook secret + reconciling an ambiguous receipt
+
+### Automated real-service environment
+
+The devcontainer uses Docker Compose to start PostgreSQL, PostgREST, Supabase
+Edge Runtime, and DynamoDB Local. The shared Dockerfile installs development
+tools through `.devcontainer/install-tools.sh`. Database services use persistent
+named volumes, private network ports, and local-only fixture credentials.
+This minimal Supabase stack excludes Studio, Auth, and Storage.
+
+Build the services, install locked dependencies, and run compilation, contracts,
+architecture checks, and real database integration tests:
+
+```sh
+pnpm build:environment
+```
+
+The Apple Container CI pipeline uses the same Dockerfile and test suite:
+
+```sh
+pnpm build:environment --runtime apple
+```
+
+This Mac's local network restrictions are a separate opt-in extension:
+
+```sh
+pnpm build:environment --runtime apple --patch
+```
+
+`--patch` verifies the existing `192.168.64.0/24` default network, the host DNS
+listener on `127.0.0.1:5300`, and the privileged PF redirect before any build.
+It sets container DNS to `192.168.64.1`, relying on that verified redirect.
+It stops if verification fails, and never changes PF or uses alternate DNS.
+Run with an already authorized sudo session so PF can be inspected. This patch
+is specific to Apple Container; it does not reconfigure Docker/Colima networking.
+Normal setup and production builds carry none of these local restrictions.
+
+`.github/workflows/apple-container.yml` runs on a dedicated self-hosted Apple
+Silicon macOS 26+ runner with Node/npm and Apple Container installed. Manual
+runs expose a `patch` input, defaulting to false. Do not run untrusted PRs on a
+personal Mac. Pipeline containers are recreated; their data volumes persist.
+
+The tests verify 100 concurrent duplicates and real persistence. Cloud AWS,
+performance targets, actual service restarts, and the full cancellation/failure
+acceptance matrix remain separate gates. The architecture checker currently
+warns that TypeScript 7 support is incomplete.
