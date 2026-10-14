@@ -1,7 +1,7 @@
 import type {
   WebhookCredential,
   WebhookCredentialPort,
-} from '../../../application/ports/outbound/webhook-credential.port.js';
+} from '../../../application/ports/outbound/webhook-credential.port.ts';
 
 /** Resolves credential IDs from deployment-provided configuration. */
 export class TenantCredentialResolver implements WebhookCredentialPort {

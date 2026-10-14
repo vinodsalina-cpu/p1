@@ -1,6 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { DynamoRegistrationStoreAdapter } from '../../infrastructure/adapters/database/dynamo-registration-store.adapter.js';
+import { DynamoRegistrationStoreAdapter } from '../../infrastructure/adapters/database/dynamo-registration-store.adapter.ts';
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },

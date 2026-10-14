@@ -1,5 +1,5 @@
-import type { ReceiveRegistrationPort } from '../../../application/ports/inbound/receive-registration.port.js';
-import { handleProviderRegistration } from './provider-callback-http.js';
+import type { ReceiveRegistrationPort } from '../../../application/ports/inbound/receive-registration.port.ts';
+import { handleProviderRegistration } from './provider-callback-http.ts';
 
 export function providerRegistrationsHandler(
   request: Request,

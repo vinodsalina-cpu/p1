@@ -1,11 +1,11 @@
-import { CancelRegistrationUseCase } from '../../application/use-cases/cancel-registration.usecase.js';
+import { CancelRegistrationUseCase } from '../../application/use-cases/cancel-registration.usecase.ts';
 import {
   invokeWebHandler,
   serviceUnavailableResponse,
   type HttpApiGatewayEvent,
-} from '../../infrastructure/handlers/api-gateway/aws-http-api.js';
-import { providerRegistrationCancellationsHandler } from '../../infrastructure/handlers/api-gateway/provider-registrations-cancellations.js';
-import { createCallbackRuntime } from './provider-callback-runtime.js';
+} from '../../infrastructure/handlers/api-gateway/aws-http-api.ts';
+import { providerRegistrationCancellationsHandler } from '../../infrastructure/handlers/api-gateway/provider-registrations-cancellations.ts';
+import { createCallbackRuntime } from './provider-callback-runtime.ts';
 
 export async function handler(event: HttpApiGatewayEvent) {
   try {

@@ -1,4 +1,4 @@
-import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.js';
+import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.ts';
 
 export interface CancelRegistrationCommand {
   readonly credentialId: string;

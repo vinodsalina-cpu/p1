@@ -1,4 +1,4 @@
-import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.js';
+import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.ts';
 
 /** Raw bytes are passed intact so the application can verify HMAC before parsing. */
 export interface ReceiveRegistrationCommand {

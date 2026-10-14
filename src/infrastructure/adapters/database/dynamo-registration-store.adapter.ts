@@ -5,16 +5,16 @@ import {
   type DynamoDBDocumentClient,
   type TransactWriteCommandInput,
 } from '@aws-sdk/lib-dynamodb';
-import type { ReceiptQueryPort } from '../../../application/ports/outbound/receipt-query.port.js';
+import type { ReceiptQueryPort } from '../../../application/ports/outbound/receipt-query.port.ts';
 import type {
   WorkshopRegistrationPage,
   WorkshopRegistrationQueryPort,
-} from '../../../application/ports/outbound/workshop-registration-query.port.js';
-import type { CancellationApplyResult, CancellationStorePort } from '../../../application/ports/outbound/cancellation-store.port.js';
-import type { RegistrationCommitResult, RegistrationStorePort } from '../../../application/ports/outbound/registration-store.port.js';
-import type { RegistrationCancellation } from '../../../domain/entities/registration-cancellation.entity.js';
-import type { Registration } from '../../../domain/entities/registration.entity.js';
-import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.js';
+} from '../../../application/ports/outbound/workshop-registration-query.port.ts';
+import type { CancellationApplyResult, CancellationStorePort } from '../../../application/ports/outbound/cancellation-store.port.ts';
+import type { RegistrationCommitResult, RegistrationStorePort } from '../../../application/ports/outbound/registration-store.port.ts';
+import type { RegistrationCancellation } from '../../../domain/entities/registration-cancellation.entity.ts';
+import type { Registration } from '../../../domain/entities/registration.entity.ts';
+import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.ts';
 
 const MAX_CANCELLATION_RETRIES = 5;
 
@@ -43,7 +43,8 @@ export class DynamoRegistrationStoreAdapter
         SK: `REG#${registration.providerRegistrationId}`,
       };
       if (await this.getByKey(registrationKey)) {
-        return { kind: 'conflict' };
+        const committedReceipt = await this.getEventReceipt(receipt.tenantId, receipt.providerEventId);
+        return committedReceipt ? compareExistingReceipt(committedReceipt, receipt) : { kind: 'conflict' };
       }
 
       const receiptItem = createReceiptItem(receipt);
@@ -107,7 +108,8 @@ export class DynamoRegistrationStoreAdapter
           return compareExistingReceipt(existingReceipt, receipt);
         }
         if (await this.getByKey(registrationKey)) {
-          return { kind: 'conflict' };
+          const committedReceipt = await this.getEventReceipt(receipt.tenantId, receipt.providerEventId);
+          return committedReceipt ? compareExistingReceipt(committedReceipt, receipt) : { kind: 'conflict' };
         }
         if (!isTransactionCanceled(error)) {
           throw error;

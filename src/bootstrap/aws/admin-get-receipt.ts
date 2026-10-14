@@ -1,11 +1,11 @@
-import { GetRegistrationReceiptUseCase } from '../../application/use-cases/get-registration-receipt.usecase.js';
+import { GetRegistrationReceiptUseCase } from '../../application/use-cases/get-registration-receipt.usecase.ts';
 import {
   invokeWebHandler,
   serviceUnavailableResponse,
   type HttpApiGatewayEvent,
-} from '../../infrastructure/handlers/api-gateway/aws-http-api.js';
-import { adminGetReceiptHandler } from '../../infrastructure/handlers/api-gateway/admin-get-receipt.js';
-import { createAdminRegistrationStore } from './admin-registration-runtime.js';
+} from '../../infrastructure/handlers/api-gateway/aws-http-api.ts';
+import { adminGetReceiptHandler } from '../../infrastructure/handlers/api-gateway/admin-get-receipt.ts';
+import { createAdminRegistrationStore } from './admin-registration-runtime.ts';
 
 export async function handler(event: HttpApiGatewayEvent) {
   try {

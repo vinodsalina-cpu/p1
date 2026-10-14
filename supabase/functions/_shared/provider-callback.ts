@@ -1,19 +1,19 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { CancelRegistrationUseCase } from "../../../src/application/use-cases/cancel-registration.usecase.js";
-import { ReceiveRegistrationUseCase } from "../../../src/application/use-cases/receive-registration.usecase.js";
-import type { SupabaseRpcClient } from "../../../src/infrastructure/adapters/database/supabase-registration-store.adapter.js";
+import { CancelRegistrationUseCase } from "../../../src/application/use-cases/cancel-registration.usecase.ts";
+import { ReceiveRegistrationUseCase } from "../../../src/application/use-cases/receive-registration.usecase.ts";
+import type { SupabaseRpcClient } from "../../../src/infrastructure/adapters/database/supabase-registration-store.adapter.ts";
 import {
   SupabaseCancellationStoreAdapter,
   SupabaseRegistrationStoreAdapter,
-} from "../../../src/infrastructure/adapters/database/supabase-registration-store.adapter.js";
-import { HmacSignatureVerifier } from "../../../src/infrastructure/adapters/security/hmac-signature-verifier.js";
+} from "../../../src/infrastructure/adapters/database/supabase-registration-store.adapter.ts";
+import { HmacSignatureVerifier } from "../../../src/infrastructure/adapters/security/hmac-signature-verifier.ts";
 import {
   parseWebhookCredentials,
   TenantCredentialResolver,
-} from "../../../src/infrastructure/adapters/security/tenant-credential-resolver.js";
-import { WebCryptoPayloadDigest } from "../../../src/infrastructure/adapters/security/web-crypto-payload-digest.js";
-import { providerRegistrationCancellationsHandler } from "../../../src/infrastructure/handlers/api-gateway/provider-registrations-cancellations.js";
-import { providerRegistrationsHandler } from "../../../src/infrastructure/handlers/api-gateway/provider-registrations.js";
+} from "../../../src/infrastructure/adapters/security/tenant-credential-resolver.ts";
+import { WebCryptoPayloadDigest } from "../../../src/infrastructure/adapters/security/web-crypto-payload-digest.ts";
+import { providerRegistrationCancellationsHandler } from "../../../src/infrastructure/handlers/api-gateway/provider-registrations-cancellations.ts";
+import { providerRegistrationsHandler } from "../../../src/infrastructure/handlers/api-gateway/provider-registrations.ts";
 
 type CallbackType = "registration" | "cancellation";
 

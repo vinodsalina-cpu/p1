@@ -1,8 +1,8 @@
-import type { CancelRegistrationCommand, CancelRegistrationPort } from '../../../application/ports/inbound/cancel-registration.port.js';
-import type { ReceiveRegistrationCommand, ReceiveRegistrationPort } from '../../../application/ports/inbound/receive-registration.port.js';
-import { InvalidSignatureException } from '../../../domain/exceptions/invalid-signature.exception.js';
-import { RegistrationConflictException } from '../../../domain/exceptions/registration-conflict.exception.js';
-import { TenantMismatchException } from '../../../domain/exceptions/tenant-mismatch.exception.js';
+import type { CancelRegistrationCommand, CancelRegistrationPort } from '../../../application/ports/inbound/cancel-registration.port.ts';
+import type { ReceiveRegistrationCommand, ReceiveRegistrationPort } from '../../../application/ports/inbound/receive-registration.port.ts';
+import { InvalidSignatureException } from '../../../domain/exceptions/invalid-signature.exception.ts';
+import { RegistrationConflictException } from '../../../domain/exceptions/registration-conflict.exception.ts';
+import { TenantMismatchException } from '../../../domain/exceptions/tenant-mismatch.exception.ts';
 
 export const MAX_PROVIDER_BODY_BYTES = 16 * 1024;
 

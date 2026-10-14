@@ -1,5 +1,5 @@
-import type { CancelRegistrationPort } from '../../../application/ports/inbound/cancel-registration.port.js';
-import { handleProviderCancellation } from './provider-callback-http.js';
+import type { CancelRegistrationPort } from '../../../application/ports/inbound/cancel-registration.port.ts';
+import { handleProviderCancellation } from './provider-callback-http.ts';
 
 export function providerRegistrationCancellationsHandler(
   request: Request,

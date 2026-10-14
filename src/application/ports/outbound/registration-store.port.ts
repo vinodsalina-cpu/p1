@@ -1,5 +1,5 @@
-import type { Registration } from '../../../domain/entities/registration.entity.js';
-import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.js';
+import type { Registration } from '../../../domain/entities/registration.entity.ts';
+import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.ts';
 
 export type RegistrationCommitResult =
   | { readonly kind: 'created'; readonly receipt: RegistrationReceipt }

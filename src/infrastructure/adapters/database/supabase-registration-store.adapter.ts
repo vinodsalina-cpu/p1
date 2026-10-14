@@ -1,8 +1,8 @@
-import type { CancellationApplyResult, CancellationStorePort } from '../../../application/ports/outbound/cancellation-store.port.js';
-import type { RegistrationCommitResult, RegistrationStorePort } from '../../../application/ports/outbound/registration-store.port.js';
-import type { RegistrationCancellation } from '../../../domain/entities/registration-cancellation.entity.js';
-import type { Registration } from '../../../domain/entities/registration.entity.js';
-import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.js';
+import type { CancellationApplyResult, CancellationStorePort } from '../../../application/ports/outbound/cancellation-store.port.ts';
+import type { RegistrationCommitResult, RegistrationStorePort } from '../../../application/ports/outbound/registration-store.port.ts';
+import type { RegistrationCancellation } from '../../../domain/entities/registration-cancellation.entity.ts';
+import type { Registration } from '../../../domain/entities/registration.entity.ts';
+import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.ts';
 
 interface SupabaseRpcResult {
   readonly data: unknown;

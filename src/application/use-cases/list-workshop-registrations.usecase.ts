@@ -2,8 +2,8 @@ import type {
   ListWorkshopRegistrationsPort,
   ListWorkshopRegistrationsQuery,
   ListWorkshopRegistrationsResult,
-} from '../ports/inbound/list-workshop-registrations.port.js';
-import type { WorkshopRegistrationQueryPort } from '../ports/outbound/workshop-registration-query.port.js';
+} from '../ports/inbound/list-workshop-registrations.port.ts';
+import type { WorkshopRegistrationQueryPort } from '../ports/outbound/workshop-registration-query.port.ts';
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;

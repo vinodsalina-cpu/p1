@@ -1,4 +1,4 @@
-import type { Registration } from '../../../domain/entities/registration.entity.js';
+import type { Registration } from '../../../domain/entities/registration.entity.ts';
 
 export interface ListWorkshopRegistrationsQuery {
   readonly tenantId: string;

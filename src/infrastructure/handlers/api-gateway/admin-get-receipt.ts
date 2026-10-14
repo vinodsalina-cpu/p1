@@ -1,4 +1,4 @@
-import type { GetRegistrationReceiptPort } from '../../../application/ports/inbound/get-registration-receipt.port.js';
+import type { GetRegistrationReceiptPort } from '../../../application/ports/inbound/get-registration-receipt.port.ts';
 
 export async function adminGetReceiptHandler(
   request: Request,

@@ -1,4 +1,4 @@
-import type { ListWorkshopRegistrationsPort } from '../../../application/ports/inbound/list-workshop-registrations.port.js';
+import type { ListWorkshopRegistrationsPort } from '../../../application/ports/inbound/list-workshop-registrations.port.ts';
 
 export async function adminListRegistrationsHandler(
   request: Request,

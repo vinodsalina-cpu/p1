@@ -1,4 +1,4 @@
-import type { PayloadDigestPort } from '../../../application/ports/outbound/payload-digest.port.js';
+import type { PayloadDigestPort } from '../../../application/ports/outbound/payload-digest.port.ts';
 
 export class WebCryptoPayloadDigest implements PayloadDigestPort {
   async sha256(rawBody: Uint8Array): Promise<string> {

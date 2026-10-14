@@ -1,4 +1,4 @@
-import type { SignatureVerifierPort, VerifyWebhookSignatureInput } from '../../../application/ports/outbound/signature-verifier.port.js';
+import type { SignatureVerifierPort, VerifyWebhookSignatureInput } from '../../../application/ports/outbound/signature-verifier.port.ts';
 
 const MAX_CLOCK_SKEW_SECONDS = 5 * 60;
 

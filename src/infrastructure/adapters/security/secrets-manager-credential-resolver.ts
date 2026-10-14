@@ -1,6 +1,6 @@
 import { GetSecretValueCommand, type SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
-import type { WebhookCredential, WebhookCredentialPort } from '../../../application/ports/outbound/webhook-credential.port.js';
-import { parseWebhookCredentials } from './tenant-credential-resolver.js';
+import type { WebhookCredential, WebhookCredentialPort } from '../../../application/ports/outbound/webhook-credential.port.ts';
+import { parseWebhookCredentials } from './tenant-credential-resolver.ts';
 
 export class SecretsManagerCredentialResolver implements WebhookCredentialPort {
   private credentialMap: ReadonlyMap<string, WebhookCredential> | undefined;

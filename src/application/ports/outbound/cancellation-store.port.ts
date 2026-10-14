@@ -1,5 +1,5 @@
-import type { RegistrationCancellation } from '../../../domain/entities/registration-cancellation.entity.js';
-import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.js';
+import type { RegistrationCancellation } from '../../../domain/entities/registration-cancellation.entity.ts';
+import type { RegistrationReceipt } from '../../../domain/entities/registration-receipt.entity.ts';
 
 export type CancellationApplyResult =
   | {

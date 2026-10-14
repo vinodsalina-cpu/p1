@@ -6,6 +6,7 @@
     // package.json declares "type": "module"; NodeNext follows Node's ESM rules.
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "rewriteRelativeImportExtensions": true,
     "lib": ["ES2024"],
 
     // TypeScript's local build emits only deployable Node application source.

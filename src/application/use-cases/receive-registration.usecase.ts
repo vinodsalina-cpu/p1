@@ -1,16 +1,16 @@
-import type { ReceiveRegistrationCommand, ReceiveRegistrationPort, ReceiveRegistrationResult } from '../ports/inbound/receive-registration.port.js';
-import type { ClockPort } from '../ports/outbound/clock.port.js';
-import type { IdGeneratorPort } from '../ports/outbound/id-generator.port.js';
-import type { PayloadDigestPort } from '../ports/outbound/payload-digest.port.js';
-import type { RegistrationStorePort } from '../ports/outbound/registration-store.port.js';
-import type { SignatureVerifierPort } from '../ports/outbound/signature-verifier.port.js';
-import type { WebhookCredentialPort } from '../ports/outbound/webhook-credential.port.js';
-import type { Registration } from '../../domain/entities/registration.entity.js';
-import type { RegistrationReceipt } from '../../domain/entities/registration-receipt.entity.js';
-import { InvalidSignatureException } from '../../domain/exceptions/invalid-signature.exception.js';
-import { RegistrationConflictException } from '../../domain/exceptions/registration-conflict.exception.js';
-import { TenantMismatchException } from '../../domain/exceptions/tenant-mismatch.exception.js';
-import { parseUtcTimestamp } from './provider-payload-validation.js';
+import type { ReceiveRegistrationCommand, ReceiveRegistrationPort, ReceiveRegistrationResult } from '../ports/inbound/receive-registration.port.ts';
+import type { ClockPort } from '../ports/outbound/clock.port.ts';
+import type { IdGeneratorPort } from '../ports/outbound/id-generator.port.ts';
+import type { PayloadDigestPort } from '../ports/outbound/payload-digest.port.ts';
+import type { RegistrationStorePort } from '../ports/outbound/registration-store.port.ts';
+import type { SignatureVerifierPort } from '../ports/outbound/signature-verifier.port.ts';
+import type { WebhookCredentialPort } from '../ports/outbound/webhook-credential.port.ts';
+import type { Registration } from '../../domain/entities/registration.entity.ts';
+import type { RegistrationReceipt } from '../../domain/entities/registration-receipt.entity.ts';
+import { InvalidSignatureException } from '../../domain/exceptions/invalid-signature.exception.ts';
+import { RegistrationConflictException } from '../../domain/exceptions/registration-conflict.exception.ts';
+import { TenantMismatchException } from '../../domain/exceptions/tenant-mismatch.exception.ts';
+import { parseUtcTimestamp } from './provider-payload-validation.ts';
 
 const RECEIPT_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
