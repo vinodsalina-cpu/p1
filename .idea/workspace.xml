@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AirChatToolWindow">
+    <tab path="4/codex/e33be20d/aj3tbhtbpse728kakt97s4rn4" version="20" tabKey="aj3tbhtbpse728kakt97s4rn4" projectHash="e33be20d" sessionWorkspaceId="$PROJECT_DIR$" projectDirectory="$PROJECT_DIR$" threadIdentity="codex:local:1d678d64-be47-474e-89ba-77e587e93f88" launchTargetId="acp.v1.6163702e72656769737472792e636f6465782d616370" threadId="local:1d678d64-be47-474e-89ba-77e587e93f88" threadTitle="Review against p1 needs" threadActivity="PROCESSING">
+      <launchProfile name="" agentId="codex" launchMode="DEFAULT" launchTargetId="acp.v1.6163702e72656769737472792e636f6465782d616370" interactionSurfaceId="native" reasoningEffort="AUTO" />
+    </tab>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="559c3a02-9f68-46d1-92ab-d85d8a184fb3" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.devcontainer/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.devcontainer/compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseLocalColorSettings">
+    <colors>
+      <entry key="eb0defc2-db33-4bf8-8d67-ab0e07dd4446" value="" />
+    </colors>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="88" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0008492283079489" />
+      <entry key="MS500" value="1.873902815094325" />
+      <entry key="S2" value="7.695648150671766" />
+      <entry key="S5" value="13.616484699535308" />
+      <entry key="S10" value="17.377763197737643" />
+      <entry key="S30" value="20.85670322336593" />
+      <entry key="S60" value="21.88973085810912" />
+      <entry key="M2" value="22.435157866303125" />
+      <entry key="M5" value="24.370388441547814" />
+      <entry key="M10" value="57.45672652054173" />
+      <entry key="M15" value="128.7958048374665" />
+      <entry key="M30" value="385.80782638379173" />
+      <entry key="H1" value="744.1677571960574" />
+      <entry key="H2" value="1064.7369658504188" />
+      <entry key="H4" value="1283.6669712549751" />
+      <entry key="D1" value="1506.324922974539" />
+      <entry key="W1" value="1548.7900453814216" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="0.9468822201194598" />
+      <entry key="MS500" value="1.8529192987434555" />
+      <entry key="S2" value="7.672073489973473" />
+      <entry key="S5" value="13.599997587591364" />
+      <entry key="S10" value="17.367316262676322" />
+      <entry key="S30" value="20.85254454269323" />
+      <entry key="S60" value="21.887551226807833" />
+      <entry key="M2" value="22.43404158897226" />
+      <entry key="M5" value="24.369917890882178" />
+      <entry key="M10" value="57.4562960474084" />
+      <entry key="M15" value="128.79521727251603" />
+      <entry key="M30" value="385.8069387898509" />
+      <entry key="H1" value="744.166862859937" />
+      <entry key="H2" value="1064.7363065010702" />
+      <entry key="H4" value="1283.6665670796183" />
+      <entry key="D1" value="1506.3248427566816" />
+      <entry key="W1" value="1548.790033568189" />
+    </decayedShown>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3KcvUB5ibOm08FrrPNyEsE4w9BK" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHELLCHECK.PATH": "/Users/macfury/Library/Application Support/JetBrains/WebStorm2026.2/plugins/Shell Script/shellcheck",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "javascript.preferred.runtime.type.id": "deno",
+    "junie.onboarding.icon.badge.shown": "true",
+    "junie.plugin.stays.banner.dismissed": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "pnpm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "settings.sync",
+    "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "/Users/macfury/Movies/p1/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "postgresql"
+    ]
+  }
+}]]></component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="docker-deploy" />
+      </set>
+    </option>
+    <option name="openRunningConfigInTab" value="true" />
+  </component>
+  <component name="RunManager">
+    <configuration name="Unnamed" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+      <deployment type="dockerfile">
+        <settings>
+          <option name="containerName" value="p1" />
+          <option name="sourceFilePath" value=".devcontainer/Dockerfile" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-WS-262.10968.77" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="559c3a02-9f68-46d1-92ab-d85d8a184fb3" name="Changes" comment="" />
+      <created>1791869684002</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1791869684002</updated>
+      <workItem from="1791869684926" duration="5032000" />
+      <workItem from="1791889573193" duration="216000" />
+      <workItem from="1791955852188" duration="453000" />
+      <workItem from="1791957232052" duration="5814000" />
+      <workItem from="1791965261208" duration="6026000" />
+      <workItem from="1791977615925" duration="715000" />
+      <workItem from="1791978343772" duration="5312000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

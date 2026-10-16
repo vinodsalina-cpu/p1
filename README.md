@@ -218,3 +218,24 @@ The tests verify 100 concurrent duplicates and real persistence. Cloud AWS,
 performance targets, actual service restarts, and the full cancellation/failure
 acceptance matrix remain separate gates. The architecture checker currently
 warns that TypeScript 7 support is incomplete.
+
+### WebStorm data sources
+
+The P1 Compose database services stay private to Docker except for loopback-only
+upstreams on `127.0.0.1:15432` (PostgreSQL) and `127.0.0.1:18000` (DynamoDB
+Local). Run the local IDE proxy in a separate terminal after starting the
+Compose stack:
+
+```sh
+pnpm ide:proxy
+```
+
+Use the `P1 Local PostgreSQL` WebStorm data source at
+`jdbc:postgresql://127.0.0.1:5432/postgres?sslmode=disable`, with user
+`postgres` and password `postgres`, saved by WebStorm in Password Safe. The
+proxy keeps the public loopback ports available if Compose services stop:
+PostgreSQL clients receive SQLSTATE `57P03`, while DynamoDB clients at
+`http://127.0.0.1:8000` receive an HTTP 503 `ServiceUnavailableException`.
+DynamoDB Local has no native data source driver in this WebStorm installation;
+configure its endpoint with region `us-east-1`, access key `local`, and secret
+key `local` in SDK-backed run configurations.
